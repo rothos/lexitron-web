@@ -9,18 +9,18 @@ export type WordSynonym = {
   score: number;
 };
 
-export type SearchResult = {
+export interface WordEtymology {
+  etymology: string;
+  word: string;
+}
+
+export interface SearchResult {
   id: string;
-  timestamp: string;
   searchTerm: string;
-  metadata: {
-    resultCount: number;
-    searchDuration: string;
-  };
+  timestamp: number;
   content: {
     definitions: WordDefinition[];
     synonyms: WordSynonym[];
-    examples?: string[];
-    relatedWords?: string[];
+    etymology?: WordEtymology;
   };
-};
+}

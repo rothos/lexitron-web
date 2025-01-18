@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { SearchResult, WordDefinition, WordSynonym } from '@/src/types/dictionary';
 
-type TabType = 'definitions' | 'synonyms';
+type TabType = 'definitions' | 'synonyms' | 'etymology';
 
 const SearchResultItem = ({ result }: { result: SearchResult }) => {
   const [activeTab, setActiveTab] = useState<TabType>('definitions');
@@ -44,6 +44,16 @@ const SearchResultItem = ({ result }: { result: SearchResult }) => {
         >
           Synonyms ({result.content.synonyms.length})
         </button>
+        <button
+          onClick={() => setActiveTab('etymology')}
+          className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
+            activeTab === 'etymology'
+              ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+          }`}
+        >
+          Etymology
+        </button>
       </div>
 
       {/* Content */}
@@ -75,6 +85,10 @@ const SearchResultItem = ({ result }: { result: SearchResult }) => {
               </span>
             ))}
           </div>
+        )}
+        {activeTab === 'etymology' && result.content.etymology && (
+          <div className="prose dark:prose-invert max-w-none" 
+               dangerouslySetInnerHTML={{ __html: result.content.etymology.etymology }} />
         )}
       </div>
     </div>

@@ -1,23 +1,38 @@
-import { NextResponse } from 'next/server';
-import { DictionaryService } from '@/src/services/dictionary';
+import { NextRequest } from 'next/server';
+import { getDefinitions } from '@/src/services/dictionary';
+import { getEtymology } from '@/src/services/etymology';
+import { SearchResult } from '@/src/types/dictionary';
 
-if (!process.env.WORDNIK_API_KEY) {
-  throw new Error('WORDNIK_API_KEY is not set in environment variables');
-}
-
-const dictionaryService = new DictionaryService(process.env.WORDNIK_API_KEY);
-
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   const { searchQuery } = await request.json();
-  
+
+  if (!searchQuery) {
+    return new Response('Search query is required', { status: 400 });
+  }
+
   try {
-    const result = await dictionaryService.searchWord(searchQuery);
-    return NextResponse.json({ result });
+    const [dictionaryData, etymologyData] = await Promise.all([
+      getDefinitions(searchQuery),
+      getEtymology(searchQuery)
+    ]);
+
+    const result: SearchResult = {
+      id: crypto.randomUUID(),
+      searchTerm: searchQuery,
+      timestamp: Date.now(),
+      content: {
+        definitions: dictionaryData.definitions,
+        synonyms: dictionaryData.synonyms,
+        etymology: etymologyData.data.items[0]?.vocabularies[0] ? {
+          etymology: etymologyData.data.items[0].vocabularies[0].etymology || '',
+          word: etymologyData.data.items[0].vocabularies[0].word
+        } : undefined
+      }
+    };
+
+    return Response.json({ result });
   } catch (error) {
-    console.error('Error searching word:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch word definitions' },
-      { status: 500 }
-    );
+    console.error('Search failed:', error);
+    return new Response('Search failed', { status: 500 });
   }
 } 
