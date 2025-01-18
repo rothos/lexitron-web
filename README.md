@@ -1,4 +1,4 @@
-# Lexitron core
+# Lexitron web
 
 ## Overview
 
@@ -18,8 +18,8 @@ with other services via their APIs in order to serve data to the end user.
 The project follows a modular architecture to support multiple interfaces (web, API, CLI) while sharing core business logic:
 
 ```
-lexitron-core/
-├── src/                   # Core shared functionality
+lexitron-web/
+├── src/                   # Shared functionality
 │   ├── services/          # Business logic and external API interactions
 │   │   └── dictionary.ts  # Dictionary service (external API integrations)
 │   ├── types/             # Shared TypeScript type definitions
@@ -53,7 +53,7 @@ lexitron-core/
 
 1. Clone the repository:
 ```
-git clone https://github.com/rothos/lexitron-core.git
+git clone https://github.com/rothos/lexitron-web.git
 ```
 
 2. Install dependencies:
