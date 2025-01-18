@@ -1,27 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-
-type WordDefinition = {
-  text: string;
-  partOfSpeech: string;
-  source: string;
-};
-
-type SearchResult = {
-  id: string;
-  timestamp: string;
-  searchTerm: string;
-  metadata: {
-    resultCount: number;
-    searchDuration: string;
-  };
-  content: {
-    definitions: WordDefinition[];
-    examples?: string[];
-    relatedWords?: string[];
-  };
-};
+import { SearchResult, WordDefinition } from '@/src/types/dictionary';
 
 const SearchResultItem = ({ result }: { result: SearchResult }) => (
   <div
