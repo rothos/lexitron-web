@@ -2,6 +2,12 @@
 
 import { useState, useRef } from 'react';
 
+type WordDefinition = {
+  text: string;
+  partOfSpeech: string;
+  source: string;
+};
+
 type SearchResult = {
   id: string;
   timestamp: string;
@@ -11,9 +17,9 @@ type SearchResult = {
     searchDuration: string;
   };
   content: {
-    title: string;
-    summary: string;
-    details: string;
+    definitions: WordDefinition[];
+    examples?: string[];
+    relatedWords?: string[];
   };
 };
 
@@ -24,18 +30,29 @@ const SearchResultItem = ({ result }: { result: SearchResult }) => (
   >
     <div className="flex justify-between items-start mb-2">
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-        {result.content.title}
+        {result.searchTerm}
       </h3>
       <span className="text-sm text-gray-500 dark:text-gray-400">
         {new Date(result.timestamp).toLocaleTimeString()}
       </span>
     </div>
-    <p className="text-gray-600 dark:text-gray-300 mb-2">
-      {result.content.summary}
-    </p>
-    <p className="text-sm text-gray-500 dark:text-gray-400">
-      {result.content.details}
-    </p>
+    <div className="space-y-3">
+      {result.content.definitions.map((def, index) => (
+        <div key={index} className="border-l-2 border-gray-200 dark:border-gray-600 pl-3">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+              {def.partOfSpeech}
+            </span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              from {def.source}
+            </span>
+          </div>
+          <p className="text-gray-600 dark:text-gray-300">
+            {def.text}
+          </p>
+        </div>
+      ))}
+    </div>
   </div>
 );
 
