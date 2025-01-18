@@ -4,6 +4,11 @@ export type WordDefinition = {
   source: string;
 };
 
+export type WordSynonym = {
+  word: string;
+  score: number;
+};
+
 export type SearchResult = {
   id: string;
   timestamp: string;
@@ -14,6 +19,7 @@ export type SearchResult = {
   };
   content: {
     definitions: WordDefinition[];
+    synonyms: WordSynonym[];
     examples?: string[];
     relatedWords?: string[];
   };

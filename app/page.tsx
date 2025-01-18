@@ -1,40 +1,92 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { SearchResult, WordDefinition } from '@/src/types/dictionary';
+import { SearchResult, WordDefinition, WordSynonym } from '@/src/types/dictionary';
 
-const SearchResultItem = ({ result }: { result: SearchResult }) => (
-  <div
-    key={result.id}
-    className="p-4 bg-white dark:bg-gray-700 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600"
-  >
-    <div className="flex justify-between items-start mb-2">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-        {result.searchTerm}
-      </h3>
-      <span className="text-sm text-gray-500 dark:text-gray-400">
-        {new Date(result.timestamp).toLocaleTimeString()}
-      </span>
-    </div>
-    <div className="space-y-3">
-      {result.content.definitions.map((def, index) => (
-        <div key={index} className="border-l-2 border-gray-200 dark:border-gray-600 pl-3">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
-              {def.partOfSpeech}
-            </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              from {def.source}
-            </span>
+type TabType = 'definitions' | 'synonyms';
+
+const SearchResultItem = ({ result }: { result: SearchResult }) => {
+  const [activeTab, setActiveTab] = useState<TabType>('definitions');
+
+  return (
+    <div
+      key={result.id}
+      className="p-4 bg-white dark:bg-gray-700 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600"
+    >
+      <div className="flex justify-between items-start mb-4">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          {result.searchTerm}
+        </h3>
+        <span className="text-sm text-gray-500 dark:text-gray-400">
+          {new Date(result.timestamp).toLocaleTimeString()}
+        </span>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex space-x-2 mb-4 border-b border-gray-200 dark:border-gray-600">
+        <button
+          onClick={() => setActiveTab('definitions')}
+          className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
+            activeTab === 'definitions'
+              ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+          }`}
+        >
+          Definitions ({result.content.definitions.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('synonyms')}
+          className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
+            activeTab === 'synonyms'
+              ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+          }`}
+        >
+          Synonyms ({result.content.synonyms.length})
+        </button>
+      </div>
+
+      {/* Tab Content */}
+      <div className="space-y-3">
+        {activeTab === 'definitions' && result.content.definitions.map((def, index) => (
+          <div key={index} className="border-l-2 border-gray-200 dark:border-gray-600 pl-3">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                {def.partOfSpeech}
+              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                from {def.source}
+              </span>
+            </div>
+            <p className="text-gray-600 dark:text-gray-300">
+              {def.text}
+            </p>
           </div>
-          <p className="text-gray-600 dark:text-gray-300">
-            {def.text}
+        ))}
+
+        {activeTab === 'synonyms' && (
+          <div className="flex flex-wrap gap-2">
+            {result.content.synonyms.map((syn, index) => (
+              <span
+                key={index}
+                className="px-3 py-1 bg-gray-100 dark:bg-gray-600 rounded-full text-sm text-gray-700 dark:text-gray-300"
+                style={{ opacity: syn.score }}
+              >
+                {syn.word}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {activeTab === 'synonyms' && result.content.synonyms.length === 0 && (
+          <p className="text-gray-500 dark:text-gray-400 italic">
+            No synonyms found
           </p>
-        </div>
-      ))}
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
