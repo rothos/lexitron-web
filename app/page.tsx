@@ -2,8 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { SearchResult, WordDefinition, WordSynonym } from '@/src/types/dictionary';
+import { GroupedRhymes } from '@/src/types/rhyme';
 
-type TabType = 'definitions' | 'synonyms' | 'etymology';
+type TabType = 'definitions' | 'synonyms' | 'etymology' | 'rhymes';
 
 const SearchResultItem = ({ result }: { result: SearchResult }) => {
   const [activeTab, setActiveTab] = useState<TabType>('definitions');
@@ -32,7 +33,7 @@ const SearchResultItem = ({ result }: { result: SearchResult }) => {
               : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
           }`}
         >
-          Definitions ({result.content.definitions.length})
+          Definitions
         </button>
         <button
           onClick={() => setActiveTab('synonyms')}
@@ -42,7 +43,7 @@ const SearchResultItem = ({ result }: { result: SearchResult }) => {
               : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
           }`}
         >
-          Synonyms ({result.content.synonyms.length})
+          Synonyms
         </button>
         <button
           onClick={() => setActiveTab('etymology')}
@@ -53,6 +54,16 @@ const SearchResultItem = ({ result }: { result: SearchResult }) => {
           }`}
         >
           Etymology
+        </button>
+        <button
+          onClick={() => setActiveTab('rhymes')}
+          className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
+            activeTab === 'rhymes'
+              ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+          }`}
+        >
+          Rhymes
         </button>
       </div>
 
@@ -90,6 +101,29 @@ const SearchResultItem = ({ result }: { result: SearchResult }) => {
           <div className="prose dark:prose-invert max-w-none" 
                dangerouslySetInnerHTML={{ __html: result.content.etymology.etymology }} />
         )}
+        {activeTab === 'rhymes' && result.content.rhymes && (
+          <div className="space-y-4">
+            {Object.entries(result.content.rhymes)
+              .sort(([a], [b]) => Number(a) - Number(b))
+              .map(([syllables, rhymes]) => (
+                <div key={syllables} className="border-l-2 border-gray-200 dark:border-gray-600 pl-3">
+                  <h4 className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-2">
+                    {syllables} syllable{Number(syllables) !== 1 ? 's' : ''}
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {rhymes.map((rhyme, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 bg-gray-100 dark:bg-gray-600 rounded-full text-sm text-gray-700 dark:text-gray-300"
+                      >
+                        {rhyme.word}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -121,20 +155,41 @@ export default function Home() {
     
     setIsLoading(true);
     try {
-      const response = await fetch('/api/search', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ searchQuery: query }),
-      });
+      const [searchResponse, rhymeResponse] = await Promise.all([
+        fetch('/api/search', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ searchQuery: query }),
+        }),
+        fetch('/api/rhymes', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ searchQuery: query }),
+        })
+      ]);
       
-      const data = await response.json();
-      setSearchResults(prevResults => [data.result, ...prevResults]);
+      const [searchData, rhymeData] = await Promise.all([
+        searchResponse.json(),
+        rhymeResponse.json()
+      ]);
+
+      const result = {
+        ...searchData.result,
+        content: {
+          ...searchData.result.content,
+          rhymes: rhymeData.result.rhymes
+        }
+      };
+      
+      setSearchResults(prevResults => [result, ...prevResults]);
       
       // Update search history
       setSearchHistory(prev => {
-        const newHistory = [query, ...prev.filter(item => item !== query)].slice(0, 50); // Keep last 50 searches
+        const newHistory = [query, ...prev.filter(item => item !== query)].slice(0, 50);
         return newHistory;
       });
       

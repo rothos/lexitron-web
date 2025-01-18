@@ -1,3 +1,5 @@
+import { GroupedRhymes } from './rhyme';
+
 export type WordDefinition = {
   text: string;
   partOfSpeech: string;
@@ -22,5 +24,6 @@ export interface SearchResult {
     definitions: WordDefinition[];
     synonyms: WordSynonym[];
     etymology?: WordEtymology;
+    rhymes?: GroupedRhymes;
   };
 }
